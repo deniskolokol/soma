@@ -15,9 +15,6 @@ import os
 
 SITE_ID = 1
 PROJECT_TITLE = "SOMA"
-ADMINS = (
-    ('Denis Kolokol', 'dkolokol@gmail.com'),
-)
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -89,7 +86,7 @@ WSGI_APPLICATION = 'wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, '{}.sqlite3'.format(PROJECT_TITLE.lower())),
     }
 }
 
@@ -201,4 +198,4 @@ LOGGING = {
 try:
     from config.local import *
 except ImportError:
-    print 'Local settings not found, running on common.'
+    print('Local settings not found, running on common.')

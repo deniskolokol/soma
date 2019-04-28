@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import TaggedItem, ScoredItem, Score
+from .models import TaggedUserItem, ScoredItem, Score
 
 class ScoreAdmin(admin.ModelAdmin):
     list_display = ("name", "minval", "maxval", "user", "privacy", )
@@ -14,12 +14,12 @@ class ScoredItemAdmin(admin.ModelAdmin):
     list_filter = ("score__name", "content_type", )
 
 
-class TaggedItemAdmin(admin.ModelAdmin):
+class TaggedUserItemAdmin(admin.ModelAdmin):
     list_display = ("name", "user", "content_object", )
     ordering = ("user", "name", "object_id", )
     list_filter = ("user", "content_type", )
 
 
-admin.site.register(TaggedItem, TaggedItemAdmin)
+admin.site.register(TaggedUserItem, TaggedUserItemAdmin)
 admin.site.register(ScoredItem, ScoredItemAdmin)
 admin.site.register(Score, ScoreAdmin)

@@ -49,7 +49,7 @@ class NamedModel(models.Model, DictDocumentMixin):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -66,27 +66,11 @@ class NamedUserModel(NamedModel):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.name, self.user.username)
 
 
-class TaggedItem(NamedUserModel):
-    """
-    Multi-purpose user-based tag model, wheree the field `name` serves as a tag.
-    Examples:
-        Segments of practice for a particular user such as 'Doable', 'Attempt',
-        <name of tradition>, etc.
-    """
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    def __unicode__(self):
-        parent_uni = super(TaggedItem, self).__unicode__()
-        return "%s of %s:%d" % (parent_uni, self.content_type, self.object_id)
-
-
-class TaggedItem(NamedUserModel):
+class TaggedUserModel(NamedUserModel):
     """
     Multi-purpose user-based tag model, where the field `name` serves as a tag.
     Examples:
@@ -97,10 +81,29 @@ class TaggedItem(NamedUserModel):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
-    def __unicode__(self):
-        parent_uni = super(TaggedItem, self).__unicode__()
+    class Meta:
+        abstract = True
+
+
+class TaggedModel(NamedModel):
+    """
+    Multi-purpose tag model, where the field `name` serves as a tag.
+    Can be attached to any other model without mentioning a user.
+    Internal use only!
+    """
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        abstract = True
+
+
+class TaggedUserItem(TaggedUserModel):
+    def __str__(self):
+        parent_str = super().__str__()
         return "#%s %s:%s:%d" % (
-            parent_uni,
+            parent_str,
             self.content_type.app_label,
             self.content_type.model,
             self.object_id
@@ -122,17 +125,14 @@ class Score(NamedUserModel):
     maxval = models.PositiveIntegerField()
 
 
-class ScoredItem(models.Model):
+class ScoredItem(TaggedModel):
     """
     Multi-purpose user-based score model.
     """
     score = models.ForeignKey(Score, on_delete=models.CASCADE)
     val = models.PositiveIntegerField(default=0)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s:%d to %s:%s:%d" % (
             self.score.user.username,
             self.score.name,
@@ -143,15 +143,14 @@ class ScoredItem(models.Model):
             )
 
 
-class Image(NamedUserModel):
+class ImageUser(TaggedUserItem):
     """
-    Illustration that can be attached to an arbitrary model.
+    Illustration that can be attached by user to an arbitrary model.
+    Example: image of a particular form of Asana, which serves as a
+             reference to a particular user, but not to others.
     """
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
     img = models.ImageField(upload_to=user_directory_path)
 
-    def __unicode__(self):
-        parent_uni = super(Image, self).__unicode__()
-        return "%s - %s" % (parent_uni, self.url)
+    def __str__(self):
+        parent_str = super().__str__()
+        return "%s - %s" % (parent_str, self.url)
